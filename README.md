@@ -35,13 +35,13 @@ agy plugin list
 Two independent layers (belt-and-suspenders):
 
 1. **`SessionStart` hook** ([`hooks/hooks.json`](hooks/hooks.json) →
-   [`hooks/session-start.sh`](hooks/session-start.sh)): on every new session,
+   [`hooks/session-start.mjs`](hooks/session-start.mjs)): on every new session,
    the hook injects the **full text of `SKILL.md`** into the agent's context
    via `hookSpecificOutput.additionalContext`, so the protocol is active from
-   the very first turn. The script JSON-encodes the skill with `python3`
-   (falling back to `jq`, then `node`); if none of those exist, it still emits
-   a valid directive telling the agent to read the skill file from disk. It
-   always exits 0 and never blocks the session.
+   the very first turn. The hook is a dependency-free Node.js (ESM) script —
+   it runs identically on Linux, macOS, and Windows. If `SKILL.md` cannot be
+   read it still emits a valid directive telling the agent to read the skill
+   file from disk. It always exits 0 and never blocks the session.
 2. **Always-on rule** ([`rules/hyperfragment-orchestrator.md`](rules/hyperfragment-orchestrator.md)):
    prepended to every prompt by the plugin's `rules/` mechanism. It restates
    the non-negotiable core (evidence-bound claims, no APIs from memory,
@@ -62,14 +62,14 @@ agy   # start a new session
 - Ask the agent *"what protocol are you following?"* — it should answer with
   the Five Laws and the PLAN/EXECUTE/REVIEW/VERIFY mode router.
 - Hook output can be tested standalone:
-  `./hooks/session-start.sh | python3 -m json.tool > /dev/null && echo OK`
+  `node hooks/session-start.mjs | python3 -m json.tool > /dev/null && echo OK`
 
 ## Layout
 
 ```
 plugin.json                                 # plugin manifest
 hooks/hooks.json                            # registers the SessionStart hook
-hooks/session-start.sh                      # injects SKILL.md into session context
+hooks/session-start.mjs                     # injects SKILL.md into session context
 rules/hyperfragment-orchestrator.md         # always-on fallback rule
 skills/hyperfragment-orchestrator/SKILL.md  # the full protocol (verbatim)
 ```
@@ -87,4 +87,6 @@ if a new `agy` release changes behavior:
 - The full official `plugin.json` schema; this manifest uses the universally
   observed fields (`name`, `version`, `description`, `author`).
 
-The hook script requires a POSIX shell (macOS/Linux/WSL/Git Bash).
+The hook requires [Node.js](https://nodejs.org) (any maintained version) on
+`PATH`. If Node is absent, the hook fails silently and the `rules/` fallback
+layer still enforces the protocol.

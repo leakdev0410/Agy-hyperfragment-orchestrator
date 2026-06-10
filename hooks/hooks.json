@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${extensionPath}/hooks/session-start.sh",
+            "command": "node \"${extensionPath}/hooks/session-start.mjs\"",
             "timeout": 15
           }
         ]
