@@ -17,7 +17,7 @@ through independent verifiers. Full text:
 agy plugin install https://github.com/leakdev0410/Agy-hyperfragment-orchestrator
 agy plugin enable hyperfragment-orchestrator
 
-# Or from a local clone (useful for development):
+# Or from a local clone (most reliable; required on macOS — see Troubleshooting):
 git clone https://github.com/leakdev0410/Agy-hyperfragment-orchestrator
 agy plugin install ./Agy-hyperfragment-orchestrator     # or: agy plugin link
 agy plugin enable hyperfragment-orchestrator
@@ -29,6 +29,28 @@ Verify the bundle before/after installing:
 agy plugin validate ./Agy-hyperfragment-orchestrator
 agy plugin list
 ```
+
+### Troubleshooting: `unsupported extension format` / Lỗi khi cài qua URL
+
+`agy plugin install <github-url>` clones the repo into a temp directory and
+then detects the bundle format by looking for a **`gemini-extension.json`**
+marker at the repo root (the URL installer is inherited from Gemini CLI's
+extension downloader). If that file is missing, install fails with:
+
+```
+Error: failed to process downloaded plugin: unsupported extension format at <temp dir>
+```
+
+This repo ships `gemini-extension.json` (mirroring `plugin.json`) precisely so
+the URL install path works. If you still hit the error:
+
+- **Update `agy`** — older releases (≤ 1.0.5) reject some URL installs
+  outright.
+- **macOS**: a known `agy` bug mis-resolves the `/var` → `/private/var`
+  symlink for the temp clone and reports the same error regardless of repo
+  contents. Use the local-clone install above.
+- **Fallback (always works)**: clone the repo yourself and run
+  `agy plugin install ./Agy-hyperfragment-orchestrator`.
 
 ## How auto-activation works / Cơ chế tự kích hoạt
 
@@ -68,6 +90,7 @@ agy   # start a new session
 
 ```
 plugin.json                                 # plugin manifest
+gemini-extension.json                       # marker required by `agy plugin install <url>`
 hooks/hooks.json                            # registers the SessionStart hook
 hooks/session-start.mjs                     # injects SKILL.md into session context
 rules/hyperfragment-orchestrator.md         # always-on fallback rule
@@ -86,6 +109,12 @@ if a new `agy` release changes behavior:
   `rules/` fallback keeps the protocol enforced.
 - The full official `plugin.json` schema; this manifest uses the universally
   observed fields (`name`, `version`, `description`, `author`).
+- The dual manifest: `plugin.json` is read by the plugin system, while
+  `gemini-extension.json` is what the **URL installer** validates when it
+  processes the cloned repo (its absence is the documented cause of
+  `unsupported extension format`, e.g. in the agy-hud plugin's architecture
+  notes). Both must agree on `name`/`version`. If a future `agy` release
+  unifies the two, keeping both files remains harmless.
 
 The hook requires [Node.js](https://nodejs.org) (any maintained version) on
 `PATH`. If Node is absent, the hook fails silently and the `rules/` fallback
