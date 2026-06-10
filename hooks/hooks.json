@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${extensionPath}/hooks/session-start.sh",
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  }
+}
