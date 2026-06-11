@@ -1,7 +1,7 @@
 {
   "name": "hyperfragment-orchestrator",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Auto-activates the Hyperfragment Orchestrator zero-defect protocol (PLAN/EXECUTE/REVIEW/VERIFY) at the start of every Antigravity session.",
   "author": "leakdev0410",
-  "contextFileName": "rules/hyperfragment-orchestrator.md"
+  "contextFileName": "GEMINI.md"
 }
