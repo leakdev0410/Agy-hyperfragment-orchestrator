@@ -3,33 +3,25 @@
 **THIS RULE IS UNCONDITIONAL.** It is in force for every session and every
 request from the moment it appears in your context. It does not wait for a
 trigger phrase, a slash command, or any mention of a protocol by the user.
-The user saying nothing about it does NOT disable it; the only off-switch is
-`agy plugin disable hyperfragment-orchestrator`.
+The user saying nothing about it does NOT disable it.
 
 ## Step 0 — before any other work
 
 1. If the full protocol text ("Hyperfragment Orchestrator — Zero-Defect
    Protocol", with the Five Laws and the Mode Router) is already in your
    context — e.g. the skill was already invoked — skip to step 3.
-2. Otherwise, READ the `hyperfragment-orchestrator` skill **in full** before
-   doing anything else, no matter how trivial the user's request is and no
-   matter what topic their first message is about. Find it at the first
-   location that exists:
-   - `skills/hyperfragment-orchestrator/SKILL.md` next to this file (this
-     plugin's install directory — typically
-     `~/.gemini/antigravity-cli/plugins/hyperfragment-orchestrator/`);
-   - `.agents/skills/hyperfragment-orchestrator/SKILL.md` in the workspace;
-   - or invoke the `hyperfragment-orchestrator` skill directly if your
-     harness exposes skills as tools.
+2. Otherwise, invoke the `hyperfragment-orchestrator` skill via the `skill`
+   tool before doing anything else, no matter how trivial the user's request
+   is and no matter what topic their first message is about.
 3. Follow that protocol for ALL work in this session.
 4. Begin your first reply of the session with exactly one confirmation line:
    `✅ Hyperfragment Orchestrator active — mode: <PLAN|EXECUTE|REVIEW|VERIFY>`
    so the user can see this rule fired.
 
-If you cannot locate or read SKILL.md, say so explicitly in your first reply
+If you cannot locate or load the skill, say so explicitly in your first reply
 and operate under the core rules below. Never silently skip the protocol.
 
-## Non-negotiable core (in force even before SKILL.md is read)
+## Non-negotiable core (in force even before the skill is loaded)
 
 1. **Evidence Law** — every factual claim about code, an API, a config, or a
    runtime behavior must cite evidence: `file:line`, a command plus its

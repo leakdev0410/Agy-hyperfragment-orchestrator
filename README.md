@@ -1,134 +1,77 @@
-# Agy Hyperfragment Orchestrator
+# Hyperfragment Orchestrator
 
-An [Antigravity CLI](https://antigravity.google/product/antigravity-cli) (`agy`)
-plugin that **auto-activates the Hyperfragment Orchestrator zero-defect
-protocol at the start of every session** — no manual skill invocation, no
-reliance on lazy semantic skill matching.
+A zero-defect engineering protocol plugin for
+[opencode](https://github.com/anomalyco/opencode) that **auto-activates the
+Hyperfragment Orchestrator protocol at the start of every session** — no
+manual skill invocation needed.
 
 The protocol (PLAN / EXECUTE / REVIEW / VERIFY) recursively fragments any
 coding task into atomic, evidence-bound steps and cross-verifies every claim
 through independent verifiers. Full text:
-[`skills/hyperfragment-orchestrator/SKILL.md`](skills/hyperfragment-orchestrator/SKILL.md).
+[`.agents/skills/hyperfragment-orchestrator/SKILL.md`](.agents/skills/hyperfragment-orchestrator/SKILL.md).
 
-## Install / Cài đặt
+## Install / Cai dat
 
 ```sh
-# From this repository:
-agy plugin install https://github.com/leakdev0410/Agy-hyperfragment-orchestrator
-agy plugin enable hyperfragment-orchestrator
+# Clone into your opencode skills directory:
+git clone https://github.com/leakdev0410/Agy-hyperfragment-orchestrator \
+  "$env:USERPROFILE\.config\opencode\plugins\hyperfragment-orchestrator"
 
-# Or from a local clone (most reliable; required on macOS — see Troubleshooting):
+# Or clone anywhere and configure opencode to load it via AGENTS.md convention
 git clone https://github.com/leakdev0410/Agy-hyperfragment-orchestrator
-agy plugin install ./Agy-hyperfragment-orchestrator     # or: agy plugin link
-agy plugin enable hyperfragment-orchestrator
+# Add the repo path to your workspace or copy .agents/ into your project
 ```
 
-Verify the bundle before/after installing:
+OpenCode discovers skills from `.agents/skills/` directories. The
+`AGENTS.md` at the repo root provides unconditional session activation.
 
-```sh
-agy plugin validate ./Agy-hyperfragment-orchestrator
-agy plugin list
-```
+## Other harnesses / Nen tang khac
 
-### Troubleshooting: `unsupported extension format` / Lỗi khi cài qua URL
+The protocol itself is model- and harness-agnostic (see the *Harness
+Adaptation* section in
+[`.agents/skills/hyperfragment-orchestrator/SKILL.md`](.agents/skills/hyperfragment-orchestrator/SKILL.md)).
+To run the protocol on another tool, copy `SKILL.md` into that tool's
+instruction surface by hand (Cursor/Cline rules, aider `CONVENTIONS.md`, a
+system prompt, etc.).
 
-`agy plugin install <github-url>` clones the repo into a temp directory and
-then detects the bundle format by looking for a **`gemini-extension.json`**
-marker at the repo root (the URL installer is inherited from Gemini CLI's
-extension downloader). If that file is missing, install fails with:
+## How auto-activation works / Co che tu kich hoat
 
-```
-Error: failed to process downloaded plugin: unsupported extension format at <temp dir>
-```
+1. **AGENTS.md** — opencode reads `AGENTS.md` from the repo root as
+   an always-on context rule. It unconditionally orders the agent — before
+   any other work — to invoke the `hyperfragment-orchestrator` skill, follow
+   it, and confirm activation with `✅ Hyperfragment Orchestrator active`
+   in its first reply. It also restates the non-negotiable core (evidence-bound
+   claims, no APIs from memory, UNKNOWN over guessing) so the essentials hold
+   even if the skill cannot be loaded.
+2. **Skill matching** (backup) — the skill ships under `.agents/skills/`, so
+   opencode's skill system can load it on demand. Trigger phrases ("plan
+   this", "review this PR", "siêu phân mảnh", "không được sai", ...) still
+   load the full protocol.
+3. **Redundant skill copy** — `skills/hyperfragment-orchestrator/SKILL.md`
+   mirrors the canonical `.agents/skills/` copy for harness portability.
 
-This repo ships `gemini-extension.json` (mirroring `plugin.json`) precisely so
-the URL install path works. If you still hit the error:
+## Checking it works / Kiem tra
 
-- **Update `agy`** — older releases (≤ 1.0.5) reject some URL installs
-  outright.
-- **macOS**: a known `agy` bug mis-resolves the `/var` → `/private/var`
-  symlink for the temp clone and reports the same error regardless of repo
-  contents. Use the local-clone install above.
-- **Fallback (always works)**: clone the repo yourself and run
-  `agy plugin install ./Agy-hyperfragment-orchestrator`.
-
-## How auto-activation works / Cơ chế tự kích hoạt
-
-One always-on layer, plus semantic matching as backup:
-
-1. **Extension context file** ([`GEMINI.md`](GEMINI.md)): loaded into the
-   model's context **in every session where the plugin is active** — the
-   documented Gemini-CLI-extension mechanism that `agy` inherits. It is
-   wired up twice for redundancy: declared explicitly via `contextFileName`
-   in both [`gemini-extension.json`](gemini-extension.json) and
-   [`plugin.json`](plugin.json), and named `GEMINI.md` at the repo root so
-   it is also picked up by the documented default ("if this property is not
-   used but a GEMINI.md file is present in your extension directory, then
-   that file will be loaded"). The file unconditionally orders the agent —
-   before any other work, regardless of what the user's first message says —
-   to read `skills/hyperfragment-orchestrator/SKILL.md` in full, follow it,
-   and confirm activation with a `✅ Hyperfragment Orchestrator active` line
-   in its first reply. It also restates the non-negotiable core
-   (evidence-bound claims, no APIs from memory, UNKNOWN over guessing) so
-   the essentials hold even if the skill file cannot be read.
-2. **Semantic skill matching** (backup): the skill ships normally under
-   `skills/`, so trigger phrases ("plan this", "review this PR", "siêu phân
-   mảnh", "không được sai", …) still load the full protocol even if the
-   context file is not picked up.
-
-> **Removed in v1.1.0:** the former `SessionStart` hook layer
-> (`hooks/hooks.json` + a Node.js script). It depended on Node being on
-> `PATH`, on an unverified hook event name, and on `${extensionPath}`
-> substitution — and its `hooks.json` used a shape `agy` never registered,
-> so it silently did nothing. The context file is the simpler,
-> dependency-free, documented mechanism; the plugin is now pure
-> Markdown + JSON.
-
-## Checking it works / Kiểm tra
-
-```sh
-agy   # start a new session
-```
-
-- The agent's **first reply** should begin with
-  `✅ Hyperfragment Orchestrator active — mode: <PLAN|EXECUTE|REVIEW|VERIFY>`
-  — without you typing any trigger phrase ("siêu phân mảnh" etc. is no
-  longer needed).
-- Ask the agent *"what protocol are you following?"* — it should answer with
-  the Five Laws and the PLAN/EXECUTE/REVIEW/VERIFY mode router.
-- `agy plugin list` should show `hyperfragment-orchestrator` (v1.1.0) enabled.
+Start a new opencode session in any workspace where this plugin is active.
+The agent's **first reply** should begin with:
+`✅ Hyperfragment Orchestrator active — mode: <PLAN|EXECUTE|REVIEW|VERIFY>`
+— without you typing any trigger phrase.
 
 ## Layout
 
 ```
-plugin.json                                 # plugin manifest (contextFileName → GEMINI.md)
-gemini-extension.json                       # marker required by `agy plugin install <url>`
-GEMINI.md                                   # always-on activation rule, loaded every session
-skills/hyperfragment-orchestrator/SKILL.md  # the full protocol (verbatim)
+plugin.json                                 # plugin manifest
+AGENTS.md                                   # always-on activation rule, loaded every session
+.agents/skills/hyperfragment-orchestrator/SKILL.md  # the full protocol (opencode canonical)
+skills/hyperfragment-orchestrator/SKILL.md  # mirror copy for harness portability
 ```
 
-## Compatibility notes
+To change the protocol: edit
+`.agents/skills/hyperfragment-orchestrator/SKILL.md`, then copy the same
+content into `skills/hyperfragment-orchestrator/SKILL.md` so the mirror stays
+byte-identical.
 
-Antigravity CLI's plugin surface is still evolving (mid-2026). Things to
-re-check against [antigravity.google/docs](https://antigravity.google/docs/plugins)
-if a new `agy` release changes behavior:
+## Notes
 
-- **Context-file loading**: `contextFileName` and the root-`GEMINI.md`
-  default come from the Gemini CLI extension format that `agy` inherits.
-  Whether Antigravity's own `plugin.json` reader honors `contextFileName` is
-  unverified — the field is kept there anyway because it is harmless, and
-  the root-level `GEMINI.md` default covers the gap. If a future release
-  switches the extension convention to `AGENTS.md`, rename the file and
-  update both `contextFileName` values.
-- The full official `plugin.json` schema; this manifest uses the universally
-  observed fields (`name`, `version`, `description`, `author`).
-- The dual manifest: `plugin.json` is read by the plugin system, while
-  `gemini-extension.json` is what the **URL installer** validates when it
-  processes the cloned repo (its absence is the documented cause of
-  `unsupported extension format`, e.g. in the agy-hud plugin's architecture
-  notes). Both must agree on `name`/`version` and carry the same
-  `contextFileName`. If a future `agy` release unifies the two, keeping
-  both files remains harmless.
-
-No runtime dependencies: the plugin is pure Markdown + JSON. (The former
-Node.js `SessionStart` hook was removed in v1.1.0.)
+No runtime dependencies: the whole bundle is pure Markdown + JSON, and
+nothing in it executes code.
